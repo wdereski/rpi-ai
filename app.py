@@ -46,9 +46,9 @@ except (ImportError, pygame.error):
 
 try:
     import vlc
-    HAS_VLC = True
+    has_vlc = True
 except ImportError:
-    HAS_VLC = False
+    has_vlc = False
 
 from .constants import PHOTOS_DIR, IMAGE_MAX, VIDEO_MAX, VIDEO_EXTENSIONS
 from .database import MetadataDB
