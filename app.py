@@ -47,8 +47,10 @@ except (ImportError, pygame.error):
 try:
     import vlc
     has_vlc = True
+    HAS_VLC = True
 except ImportError:
     has_vlc = False
+    HAS_VLC = False
 
 from .constants import PHOTOS_DIR, IMAGE_MAX, VIDEO_MAX, VIDEO_EXTENSIONS
 from .database import MetadataDB
@@ -714,6 +716,11 @@ class MetadataEditorApp(tk.Tk):
         if rows is None:
             rows = self.db.fetch_all()
 
+        if not rows:
+            # Nothing to show, also clear form widgets
+            self.clear_form()
+            return
+
         # 3) insert each row—use direct indexing, not .get()
         for r in rows:
             desc = r["description"] or ""
@@ -1032,6 +1039,16 @@ class MetadataEditorApp(tk.Tk):
     def display_video_thumbnail(self, video_path):
         """Displays the first frame of a video as a thumbnail, with rotation."""
         if not has_cv2 or not hasattr(self, 'video_canvas'):
+            # Fallback to default placeholder if OpenCV isn't available
+            if hasattr(self, 'video_canvas'):
+                self.video_canvas.delete("all")
+                if hasattr(self, 'default_img') and self.default_img:
+                    self.video_canvas.create_image(
+                        VIDEO_MAX[0]//2,
+                        VIDEO_MAX[1]//2,
+                        image=self.default_img,
+                        anchor='center'
+                    )
             return
 
         try:
@@ -1054,8 +1071,14 @@ class MetadataEditorApp(tk.Tk):
                 
                 photo = ImageTk.PhotoImage(image=img)
                 self.video_canvas.delete("all")
-                self.video_canvas.create_image(VIDEO_MAX[0]//2, VIDEO_MAX[1]//2, image=photo, anchor='center')
-                self.video_canvas.image = photo # Keep a reference
+                self.video_canvas.create_image(
+                    VIDEO_MAX[0]//2,
+                    VIDEO_MAX[1]//2,
+                    image=photo,
+                    anchor='center'
+                )
+                self.video_canvas.image = photo  # Keep a reference
+                self.current_thumbnail = photo
         except Exception as e:
             print(f"Error creating video thumbnail: {e}")
 
@@ -1250,6 +1273,7 @@ class MetadataEditorApp(tk.Tk):
                     self.video_canvas.delete("all")
                     self.video_canvas.create_image(VIDEO_MAX[0]//2, VIDEO_MAX[1]//2, image=photo)
                     self.video_canvas.image = photo
+                    self.current_frame = photo
                     
                     self.after(30, update_frame)  # ~33fps
             else:

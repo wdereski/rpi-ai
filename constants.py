@@ -1,12 +1,13 @@
+# Ensure path operations work reliably
 from pathlib import Path
 import os
 # Application constants
 DB_FILE = os.path.join("/Users", "williamdereski", "Pictures", "metadata", "Dereski_media_metadata_master.db")
 
 
-PHOTOS_DIR = Path(os.path.join(
-    "/Users", "williamdereski", "Pictures", "metadata", "photos_export"
-))
+PHOTOS_DIR = Path(
+    "/Users/williamdereski/Pictures/metadata/photos_export"
+)
 
 
 
